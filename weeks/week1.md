@@ -97,12 +97,19 @@ BraceWrapping:
   # 空namespace的大括号是否可以在一行
   SplitEmptyNamespace: true
 ```
+<br>
 ## **Clang-format实战**
 
-在开源项目根目录下放好配置文件，我采用的IDE是VS，会自动检查；<br><br>
+在开源项目根目录下放好配置文件，我采用的IDE是Visual Studio 2022，会自动检查；<br><br>
 ![image](https://user-images.githubusercontent.com/51207072/210161978-9e6408ac-7382-43b0-aee7-60fc38374867.png#pic_left)<br>
 然后尝试修改代码,结果出现错误：<br><br>
 <div align="left">
 <img src=https://user-images.githubusercontent.com/51207072/210162029-cf66fccb-214d-47c5-abdc-e80e3aca4444.png width=35% />
 </div>
-查找原因ing...
+查找原因ing...<br>
+查找博客发现原因是原来Visual Studio的C++代码格式化可选使用clang-format, 但它只提供默认样式！！！, 如果想使用自定义样式则需要在每个项目目录下放一个.clang-format或_clang-format文件, 没有对全部项目通用的可自定义样式（放在sln同级目录下）详见：https://blog.csdn.net/Liuqz2009/article/details/118677784<br>
+但事实是即便每个放置了由于VS自动clang-format解析不了，也会报错，所以只能尝试自定义样式，我实验时反正是报错，如有其他方案还请指出。<br>
+我在cmake构建项目时，将源代码和VS项目分离了，只需在sln下面放置一个就行。<br><br>
+![image](https://user-images.githubusercontent.com/51207072/210163309-a1527126-e7cd-444f-86e0-6433cfebcc00.png)<br>
+然后就没有报错了
+
