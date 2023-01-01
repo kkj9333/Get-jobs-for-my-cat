@@ -97,7 +97,6 @@ BraceWrapping:
   # 空namespace的大括号是否可以在一行
   SplitEmptyNamespace: true
 ```
-<br>
 ## **Clang-format实战**
 
 在开源项目根目录下放好配置文件，我采用的IDE是Visual Studio 2022，会自动检查；<br><br>
