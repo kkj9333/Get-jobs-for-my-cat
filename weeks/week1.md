@@ -109,7 +109,9 @@ BraceWrapping:
 查找原因ing...<br>
 查找博客发现原因是原来Visual Studio的C++代码格式化可选使用clang-format, 但它只提供默认样式！！！, 如果想使用自定义样式则需要在每个项目目录下放一个.clang-format或_clang-format文件, 没有对全部项目通用的可自定义样式（放在sln同级目录下）详见：https://blog.csdn.net/Liuqz2009/article/details/118677784<br>
 但事实是即便每个放置了由于VS自动clang-format解析不了，也会报错，所以只能尝试自定义样式，我实验时反正是报错，如有其他方案还请指出。<br>
-![image](https://user-images.githubusercontent.com/51207072/210165922-1d0f094c-2765-4e1c-9508-c424de5a0694.png)
+<div align="left">
+<img src=https://user-images.githubusercontent.com/51207072/210165922-1d0f094c-2765-4e1c-9508-c424de5a0694.png />
+</div>
 我在cmake构建项目时，将源代码和VS项目分离了，只需在sln下面放置一个就行。<br>
 然后就没有报错了,开始愉快改写代码...
 
