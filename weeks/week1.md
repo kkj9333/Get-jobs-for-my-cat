@@ -1,4 +1,5 @@
-# **什么是clang-format?**
+# Day 1 了解Clangformat用法并配置成功生成项目
+## **什么是clang-format?**
 Clang-Format可用于格式化（排版）多种不同语言的代码。
 其自带的排版格式主要有：LLVM, Google, Chromium, Mozilla, WebKit等
 ## **安装**
@@ -112,5 +113,7 @@ BraceWrapping:
 <img src=https://user-images.githubusercontent.com/51207072/210165922-1d0f094c-2765-4e1c-9508-c424de5a0694.png />
 </div>
 我在cmake构建项目时，将源代码和VS项目分离了，只需在sln下面放置一个就行。<br>
-然后就没有报错了,开始愉快改写代码...
+然后就没有报错了,开始愉快改写代码...<br>
+
+# Day 2 了解Clangformat用法并配置成功生成项目
 
