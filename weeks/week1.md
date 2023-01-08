@@ -115,10 +115,21 @@ BraceWrapping:
 我在cmake构建项目时，将源代码和VS项目分离了，只需在sln下面放置一个就行。<br>
 然后就没有报错了,开始愉快改写代码...<br>
 
-# Day 2-4 阅读论文 Investigating Graph Embedding Neural Networks with Unsupervised Features Extraction for Binary Analysis 
+# Day 2-7 阅读论文 Investigating Graph Embedding Neural Networks with Unsupervised Features Extraction for Binary Analysis 
 ## **论文出处**
 NDSS
-
-
+## **研究背景**
+二进制分析技术即通过利用可执行的机器代码来分析应用程序的控制结构和运行方式，有助于研究人员更好地分析软件运行原理，协助查找漏洞以及防范非预期行为等，从而保障软件和系统安全。随着人工智能技术的发展，机器学习和智能化的方法也应用在了二进制分析领域。不幸的是，传统代码分析技术通常是为源代码的分析而定制的，不能立即用于二进制代码。例如，源代码的编译过程就会破坏了变量和函数的命名，以及变量的类型，从而阻碍了二进制代码技术的适用性。
+## **研究动机**
+传统代码分析技术不能立即用于二进制代码，我们迫切需要一种能将源代码分析广阔领域中的知识转移到在二进制分析的方法，这些知识可以成为设计新的、有效的，易于使用的二进制分析工具的宝贵帮助。这些知识可以成为设计新的、有效的，易于使用的二进制分析工具的宝贵帮助。<br>
+二进制分析另外两个主要的限制是基本的块嵌入包含有限的语义信息和通常仅适用于单一的指令集体系结构（ISA）。通常一份源码可以编译为X86和ARM不同指令集下的两份可执行机器代码，他们应当是等价的，然而传统机器学习在跨架构二进制分析目前并没有得到很好的应用，因为他们通常只适用于单一指令集，我们需要改良这种现状。<br>
+## **相关工作**
+- Bao T, Burket J, Woo M, et al. {BYTEWEIGHT}: Learning to recognize functions in binary code
+- Guo W, Mu D, Xu J, et al. Lemna: Explaining deep learning based security applications[C]
+- Shin E C R, Song D, Moazzezi R. Recognizing functions in binaries with neural networks[C]
+- Mikolov T, Sutskever I, Chen K, et al. Distributed representations of words and phrases and their compositionality[J].
+- Feng Q, Zhou R, Xu C, et al. Scalable graph-based bug search for firmware images[C]
+- X. Xu, C. Liu, Q. Feng, H. Yin, L. Song, and D. Song, “Neural network based graph embedding for cross-platform binary code similarity detection,” in Proceedings of - - the 24th ACM SIGSAC Conference on Computer and Communications Security, (CCS), 2017, pp. 363–376.
+- Zuo F, Li X, Young P, et al. Neural machine translation inspired binary code similarity comparison beyond function pairs[J]. arXiv preprint arXiv:1808.04706, 2018.
 
 
