@@ -131,5 +131,5 @@ NDSS
 - Feng Q, Zhou R, Xu C, et al. Scalable graph-based bug search for firmware images[C]
 - X. Xu, C. Liu, Q. Feng, H. Yin, L. Song, and D. Song, “Neural network based graph embedding for cross-platform binary code similarity detection,” in Proceedings of - - the 24th ACM SIGSAC Conference on Computer and Communications Security, (CCS), 2017, pp. 363–376.
 - Zuo F, Li X, Young P, et al. Neural machine translation inspired binary code similarity comparison beyond function pairs[J]. arXiv preprint arXiv:1808.04706, 2018.
-
-
+## **备注**
+以后再补充，以防查重
