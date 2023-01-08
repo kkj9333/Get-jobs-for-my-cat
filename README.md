@@ -19,3 +19,4 @@
 | ---------- | ------------------------------------------------------------------------------- |
 | Day1       | [了解Clangformat用法并配置成功生成项目 ](./weeks/week1.md)                            |
 | Day2       | [阅读论文 Investigating Graph Embedding Neural Networks with Unsupervised Features Extraction for Binary Analysis ](./weeks/week1.md)   |
+| Day3       | [基于BossEvent包的minecraft-BedrockServer自定义阶段场景实现](./weeks/week2.md)   |
