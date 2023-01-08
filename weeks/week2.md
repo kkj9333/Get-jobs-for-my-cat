@@ -1,21 +1,12 @@
-# Day 3 了解Clangformat用法并配置成功生成项目
-## **什么是clang-format?**
-Clang-Format可用于格式化（排版）多种不同语言的代码。
-其自带的排版格式主要有：LLVM, Google, Chromium, Mozilla, WebKit等
-## **安装**
-clang-format本质是一个命令行工具
+# Day 3 基于BossEvent包的minecraft-BedrockServer自定义阶段场景实现
+## **背景前言**
+minecraft-BedrockServer是游戏我的世界基岩版版本的一款测试服务端软件，BossEvent数据包是游戏中劫掠或者带有boss标签的实体使用的交互数据包，在vanilla游戏中通过这个数据包来告诉玩家Boss名称和血量或者劫掠事件当前的状态。
+## **目的**
+在游戏中，劫掠可以显示和监听剩余掠夺者的数量，告诉我们当前劫掠的进度，我们希望可以利用这个数据包，实现类似劫掠或者自定义度更贵的的阶段化场景功能
 - window：https://releases.llvm.org/download.html
 - ubuntu：sudo apt install clang-format
 ## **基本使用方式**
-```javascript
-clang-format [options] [<file> ...]
-clang-format --help //建议至少浏览一遍帮助信息。
-```
-## **Clang-format导出格式**
-在工程项目中，可以使用.clang-format or _clang-format格式的文件来自定义规范格式，将file放入项目里代码文件相同的根目录下：<br>
-- 1.目录运行cmd 输入clang-format -style=file.
-- 2.如果是VS等支持clang-format的，则不需要额外设置，VS会自动检查项目根目录下的clangformat文件
-一个创建clang-format文件的简单方式是：
+
 ```javascript
 clang-format -style=可选格式名 -dump-config > .clang-format
 ```
