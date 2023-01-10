@@ -30,14 +30,14 @@ minecraft-BedrockServer是游戏我的世界基岩版版本的一款测试服务
         int roundmax;
         std::vector<ActorUniqueID> RegistereddPlayerlist;
 ```
-
+tick执行流程大致可描述如下，注意实际发包时需要再次判断玩家是否在线
 ```mermaid
   flowchart  TD;
-      A[Enter Round]-->B1[Get Nearby Players];
-      B1-->B2{Compare With the Registeds};
+      A[Enter Round]-->B0[Get Nearby Players];
+      B0-->B1(Nearby List);
+      B0-->|New thread|B2{Compare With the Registed};
       B2-->|Nearby - Registed|C(New Coming List);
       B2-->|Registed - Nearby|D(Left List);
-      B2-->|Nearby overfill registed|E(the New Registed list);
-      B1-->F[Send Update packet]
-      C-->D;
+      B2-->|Nearby|E(the New Registed list);
+      B1-->F[Send Update packet];
 ```
