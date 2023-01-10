@@ -22,5 +22,10 @@ minecraft-BedrockServer是游戏我的世界基岩版版本的一款测试服务
 ## **设计思路**
 那么我们需要首先设计一个劫掠事件需要的变量，我们需要有当前劫掠的回合数，最大回合数，以及劫掠事件的中心点坐标和维度和判定进入劫掠的范围，然后我们需要一个记录当前处于劫掠事件中的玩家名单，用于之后广播状态更新，这个名单会在每次事件判定进入劫掠范围的玩家数量时更新，应该如何处理新进入玩家和新退出玩家呢？在劫掠事件进行tick（单位处理时间刻度）时，利用BDS的api获取一个当前在劫掠范围里的玩家名单，然后和之前的保存的注册的玩家名单比较得出新进入玩家序列和退出玩家序列。
 ```C++
-clang-format -style=可选格式名 -dump-config > .clang-format
+        BlockPos centerpos;
+        int dimid;
+        AABB area;
+        int round = 0;
+        int roundmax;
+        std::vector<ActorUniqueID> RegistereddPlayerlist;
 ```
