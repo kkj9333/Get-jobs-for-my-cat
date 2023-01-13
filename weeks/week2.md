@@ -32,12 +32,24 @@ minecraft-BedrockServer是游戏我的世界基岩版版本的一款测试服务
 ```
 tick执行流程大致可描述如下，注意实际发包时需要再次判断玩家是否在线
 ```mermaid
-  flowchart  TD;
-      A[Enter Round]-->B0[Get Nearby Players];
-      B0-->B1(Nearby List);
-      B0-->|New thread|B2{Compare With the Registed};
-      B2-->|Nearby - Registed|C(New Coming List);
-      B2-->|Registed - Nearby|D(Left List);
-      B2-->|Nearby|E(the New Registed list);
-      B1-->F[Send Update packet];
+  graph LR;
+      A[enter round]-->B[init round];
+      B-->C[valid registeredplayer];
+      C-.->C1(the New Registed list);
+      C-->D[annouceupdate];
+      D-->E0[get Nearby player list]
+      E0-.->E2(Nearby List);
+      C1-.-E1(Registed List);
+      E1---E3{Compare With the Registed};
+      E2---E3{Compare With the Registed};
+      E0-->E3{Compare With the Registed};
+      E3-->|Registed!=Nearby|E4[send packets];
+      E3-.->|Nearby - Registed|E5(New Coming List);
+      E3-.->|Registed - Nearby|E6(Left List);
+      E4-->F[send handshakepacket];
+      E4-->G[send removepacket];
+      E5---F[send handshakepacket];
+      E6---G[send removepacket];
+      E0-->|Registed==Nearby|H[end round];
+      E4-->H[end round]
 ```
