@@ -6,5 +6,5 @@ PS:第三周在忙年终总结的东西，这边忘写了，第四周happy春节
 ## **bedrockserver线程调用**
 bedrockserver在进程启动时，首先创建主线程，在main函数中，首先会调用一个函数设置一个静态变量来记录程序的运行状态，然后会创建一个新线程CrashDumpLog，这个线程负责在程序异常退出或者崩溃时打印堆栈调用信息，之后会进行一系列初始化操作，直到DedicatedServer对象的创建，并调用start成员函数，从文件中读取数据，线程池创建和配置（包含流（stream）线程池，ID线程池，重置线程池，渲染线程池，LevelDB（以及压缩）数据库读写线程池，连接存储线程池，看门狗线程池，VR线程池等，需要注意这些的创建是单例的），然后调用runDedicatedServerLoop，此时真正意义上bedrockserver才开始执行，虽然此时仍会进行一些初始化操作。这个过程中会创建一个serverinstance对象，最后由该对象来startServerThread，调用MCServer线程来处理游戏相关的一些事件。遗憾的是，几乎所有游戏内事件包括tick在内都是由MCserver单个线程处理的，而游戏事件是bedrockserver占用最高的，这一部分恰恰是最需要多线程进行优化的，如果要解决bds卡顿问题，我们就必须着眼于这个线程的执行上，看是否有可以实现多线程优化的地方。
 mc中卡顿占用最高的就是实体部分，通过伪代码分析，会发现实体tick系统比较混乱，有分为TempEPtr和entitysystems两种tick方式，而且TempEPtr的tick貌似是链表，这使得多线程优化几乎不可能被实现，所以我们将目标转到entitysystems的tick上面里，在这之前游戏会话会把MCserver线程上锁
-<br>
+<br>**2023.02.10**<br>
 更新了，所以需要重新分析，这个部分可能得读懂相当一段长的程序运行逻辑
