@@ -84,8 +84,15 @@ task foo () {
 ## **协程驱动流程**
 如下图就是基本执行流程图<br>
 ![image](https://user-images.githubusercontent.com/51207072/219366237-92d0c0a1-73d7-4a49-aee5-b99f2e62823e.png)<br>
-浅蓝色部分的方法就是 Return_t 关联的 promise 对象的函数，浅红色部分就是 co_await 等待的 awaiter。
+浅蓝色部分的方法就是 Return_t 关联的 promise 对象的函数，浅红色部分就是 co_await 等待的 awaiter。<br>
+首先需要创建协程，创建协程之后是否挂起则由调用者设置 initial_suspend 的返回类型来确定。创建协程的流程大概如下：<br>
+创建一个协程帧（coroutine frame）；在协程帧里构建 promise 对象；把协程的参数拷贝到协程帧里；
+调用 promise.get_return_object() 返回给 caller 一个对象，即代码中的 Return_t 对象
+在这个模板框架里有一些可定制点：如 initial_suspend、final_suspend、unhandled_exception 和 return_value。
 
+我们可以通过 promise 的 initial_suspend 和 final_suspend 返回类型来控制协程是否挂起，在 unhandled_exception 里处理异常，在 return_value 里保存协程返回值。
+
+可以根据需要定制 initial_suspend 和 final_suspend 的返回对象来决定是否需要挂起协程。如果挂起协程，代码的控制权就会返回到caller，否则继续执行协程函数体(function body)。
 
 ## **基本使用方式**
 ```javascript
