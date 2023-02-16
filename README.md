@@ -22,4 +22,4 @@
 | Day3       | [基于BossEvent包的minecraft-BedrockServer自定义阶段场景实现](./weeks/week2.md)   |
 | Day4       | [元宇宙安全调研与探讨](./weeks/week2.md)   |
 | Day5       | [探索bedrockserver多线程理论与实现](./weeks/week5.md)   |
-| Day6       | [C++20协程和promise规范](./weeks/week6.md)   |
+| Day6       | [C++20协程和promise规范](./weeks/week7.md)   |
