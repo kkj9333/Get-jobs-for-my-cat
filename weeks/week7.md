@@ -74,7 +74,19 @@ struct someAsyncOpt {
 	T await_resume();
 };
 ```
-我们从网上找到一个简单的代码使用
+我们以一个简单的代码来演示这些协程对象如何协作，并在下个部分介绍协作方式：
+```C++
+task foo () { 
+    auto res = co_await suspend_always_awaiter; 
+    co_return res ; 
+}
+```
+## **协程驱动流程**
+如下图就是基本执行流程图<br>
+![image](https://user-images.githubusercontent.com/51207072/219366237-92d0c0a1-73d7-4a49-aee5-b99f2e62823e.png)<br>
+浅蓝色部分的方法就是 Return_t 关联的 promise 对象的函数，浅红色部分就是 co_await 等待的 awaiter。
+
+
 ## **基本使用方式**
 ```javascript
 clang-format [options] [<file> ...]
