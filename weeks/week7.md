@@ -10,7 +10,7 @@
 - 协程参数
 - 局部变量
 - promise对象
-这些内容在协程恢复运行的时候需要用到，caller 通过协程帧的句柄 std::coroutine_handle 来访问协程帧。
+这些内容在协程恢复运行的时候需要用到，**caller 通过协程帧的句柄 std::coroutine_handle 来访问协程帧。**
 ## **promise规范**
 简单来说，Promise规范就是：如果在类A中定义一个叫做promise_type的结构体，并且其中包含特定名字的函数，那么这个类A就符合Promise规范，它就是一个符合Promise规范的类，它也就是一个Promise。
 ### promise_type
@@ -19,12 +19,19 @@ promise_type 是 promise对象的类型。promise_type 用于定义一类协程�
 - 协程初始化完成和结束时的行为
 - 发生异常时的行为
 - 如何生成 awaiter 的行为以及 co_return 的行为等等。
-### promise_type
-
 ### coroutine return object
+它是promise.get_return_object()方法创建的，一种常见的实现手法会将 std::coroutine_handle 存储到 coroutine object 内，使得该 return object 获得访问协程的能力。
+### std::coroutine_handle
+协程帧的句柄，主要用于访问底层的协程帧、恢复协程和释放协程帧。程序员可通过调用 std::coroutine_handle::resume() 唤醒协程。
+### co_await、awaiter、awaitable
+co_await：一元操作符；
+awaitable：支持 co_await 操作符的类型；
+awaiter：定义了 await_ready、await_suspend 和 await_resume 方法的类型。
+co_await expr 通常用于表示等待一个任务(可能是 lazy 的，也可能不是)完成。co_await expr 时，expr 的类型需要是一个 awaitable，而该 co_await表达式的具体语义取决于根据该 awaitable 生成的 awaiter。
 
 ## **promise举例**
-promise 对象可以用于记录/存储一个协程实例的状态。每个协程桢与每个 promise 对象以及每个协程实例是一一对应的。
+看起来和协程相关的对象还不少，这正是协程复杂又灵活的地方，可以借助这些对象来实现对协程的完全控制，实现任何想法。但是，需要先要了解这些对象是如何协作的，把这个搞清楚了，协程的原理就掌握了，写协程应用也会游刃有余了。
+我们先来介绍一下promise 对象，它可以用于记录/存储一个协程实例的状态。每个协程桢与每个 promise 对象以及每个协程实例是一一对应的。
 如下是我从网上找到的一个例子：<br>
 ```C++
 struct task{
@@ -46,15 +53,28 @@ task getTask() {
 }
 ```
 所以根据协程规范，返回这个类的函数就是协程函数，task就是一个协程函数。
-然而，这个时候task并不能使用co_await，因为co_await关键字实际上是一个运算符，其后面只能跟随一个“实现了三个特定函数的类”。下面是一个从网上找到的描述这三个特定函数的例子：
+然而，这个时候task并不能使用co_await，我们之前已经了解到co_await是一个一元操作符，其后面只能跟随“一个实现了await_ready、await_suspend 和 await_resume三个特定函数的类”，即awaiter，所以我们还要实现这样一个类。下面是一个从网上找到的例子：
 ```C++
-struct suspend_always {
+struct suspend_always_awaiter {
 	constexpr bool await_ready() const noexcept { return false; }
 	constexpr void await_suspend(std::coroutine_handle<> h) const noexcept {}
 	constexpr void await_resume() const noexcept {}
 };
 ```
-
+当使用co_await suspend_always_awaiter(); 会发生什么呢？<br>
+**首先会构造suspend_always_awaiter**，调用其构造函数（一般情况下我们就可以通过构造函数模仿一个普通的函数调用了）。<br>
+**然后通过await_ready()判断是否需要等待**，如果返回true，就表示不需要等待，则立刻执行await_resume()；如果返回false，就表示需要等待，先执行await_suspend()，然后进入等待。_调用co_await awaitable(); 的函数会在这里暂停运行，但是不会影响所在线程的执行。_<br>
+**await_suspend()函数中，我们可以通过传统的回调函数法执行一些异步操作**，然后在回调函数中调用std::coroutine_handle<>的resume()函数主动恢复。<br>
+**await_resume()会在恢复执行后立刻执行**，_注意：co_wait的返回值就是该函数的返回值，而await_resume()函数允许拥有任意的返回值类型，模板类型也是允许的_。**也就是说可以用如下代码让co_wait的返回值更加自由**。<br>
+```C++
+template <class T>
+struct someAsyncOpt {
+	bool await_ready()
+	void await_suspend(std::coroutine_handle<>);
+	T await_resume();
+};
+```
+我们从网上找到一个简单的代码使用
 ## **基本使用方式**
 ```javascript
 clang-format [options] [<file> ...]
