@@ -1,6 +1,6 @@
 # Day 7 C++20协程和promise规范
 ## **前言**
-前几天遇到一个问题，关于js单线程如何实现异步操作，我先入为主任务是通过多线程实现的。直达查阅了相关资料后才发现，由于回调地狱等问题，js在ES6以后的版本采用了“协程”（循环事件模拟的）配合promise生成器的方法来实现单线程异步调用。C++支持协程的进程很慢，C++20才加入了协程的一些东西，但是要实现封装需要到C++23才能在程序员中广泛使用，我之前虽然了解过协程的概念，但是一直以为这种技术很新（C++没有完全实装，java好像近几年才推广，大学教程压根没提过，好吧其实归根结底都是我比较无知没怎么了解过。实际上协程概念甚至先于线程），没想到其他语言已经用上了，今天来好好记录一下这个东西。
+前几天遇到一个问题，关于js单线程如何实现异步操作，我先入为主任务是通过多线程实现的。直到查阅了相关资料后才发现，由于回调地狱等问题，js在ES6以后的版本采用了“协程”（循环事件模拟的）配合promise生成器的方法来实现单线程异步调用。C++支持协程的进程很慢，C++20才加入了协程的一些东西，但是要实现封装需要到C++23才能在程序员中广泛使用，我之前虽然了解过协程的概念，但是一直以为这种技术很新（C++没有完全实装，java好像近几年才推广，大学教程压根没提过，好吧其实归根结底都是我比较无知没怎么了解过。实际上协程概念甚至先于线程），没想到其他语言已经用上了，今天来好好记录一下这个东西。
 ## **什么是协程**
 协程就是一种特殊的函数，它可以在函数执行到某个地方的时候暂停执行，返回给调用者或恢复者（可以有一个返回值），并允许随后从暂停的地方恢复继续执行。**注意，这个暂停执行不是指将函数所在的线程暂停执行，而是单纯的暂停执行函数本身。**<br>
 从cpu执行角度来讲，我理解为cpu中的一个线程利用执行间隙来执行协程函数，这样就提高了cpu的利用效率。<br>
@@ -28,6 +28,12 @@ co_await：一元操作符；
 awaitable：支持 co_await 操作符的类型；
 awaiter：定义了 await_ready、await_suspend 和 await_resume 方法的类型。
 co_await expr 通常用于表示等待一个任务(可能是 lazy 的，也可能不是)完成。co_await expr 时，expr 的类型需要是一个 awaitable，而该 co_await表达式的具体语义取决于根据该 awaitable 生成的 awaiter。
+### co_await机制
+co_await 操作符是 C++20 新增的一个关键字，**co_await expr 一般表示等待一个惰性求值的任务**，这个任务可能在某个线程执行，也可能在 OS 内核执行，什么时候执行结束不知道，为了性能，我们又不希望阻塞等待这个任务完成，所以就借助 co_await 把协程挂起并返回到 caller，caller 可以继续做事情，当任务完成之后协程恢复并拿到 co_await 返回的结果。
+所以 co_await 一般有这几个作用：
+- 挂起协程；
+- 返回到 caller；
+- 等待某个任务(可能是 lazy 的，也可能是非 lazy 的)完成之后返回任务的结果。
 
 ## **promise举例**
 看起来和协程相关的对象还不少，这正是协程复杂又灵活的地方，可以借助这些对象来实现对协程的完全控制，实现任何想法。但是，需要先要了解这些对象是如何协作的，把这个搞清楚了，协程的原理就掌握了，写协程应用也会游刃有余了。
@@ -85,16 +91,22 @@ task foo () {
 如下图就是基本执行流程图<br>
 ![image](https://user-images.githubusercontent.com/51207072/219366237-92d0c0a1-73d7-4a49-aee5-b99f2e62823e.png)<br>
 浅蓝色部分的方法就是 Return_t 关联的 promise 对象的函数，浅红色部分就是 co_await 等待的 awaiter。<br>
-首先需要创建协程，创建协程之后是否挂起则由调用者设置 initial_suspend 的返回类型来确定。创建协程的流程大概如下：<br>
-创建一个协程帧（coroutine frame）；在协程帧里构建 promise 对象；把协程的参数拷贝到协程帧里；
-调用 promise.get_return_object() 返回给 caller 一个对象，即代码中的 Return_t 对象
-在这个模板框架里有一些可定制点：如 initial_suspend、final_suspend、unhandled_exception 和 return_value。
+首先需要创建协程，创建协程的流程大概如下：<br>
+- 创建一个协程帧（coroutine frame）；
+- 在协程帧里构建 promise 对象；
+- 把协程的参数拷贝到协程帧里；
+- 调用 promise.get_return_object() 返回给 caller 一个对象，即代码中的 Return_t 对象。
+创建协程之后是否挂起则由调用者设置 initial_suspend() 的返回类型来确定。<br>
+在这个模板框架里有一些可定制点：如 initial_suspend()、final_suspend()、unhandled_exception() 和 return_value()；又比如awaiter的await_ready()
+我们可以通过 promise 的 initial_suspend() 和 final_suspend() 返回类型来控制协程是否挂起，在 unhandled_exception() 里处理异常，在 return_value() 里保存协程返回值。
+可以根据需要定制 initial_suspend 和 final_suspend 的返回对象来决定是否需要挂起协程。如果挂起协程，代码的控制权就会返回到caller，否则继续执行协程函数体（function body）。<br>
+_另外值得注意的是，如果禁用异常，那么生成的代码里就不会有 try-catch。此时协程的运行效率几乎等同非协程版的普通函数。这在嵌入式场景很重要，也是协程的设计目的之一。_<br>
+通过定制 awaiter.await_ready() 的返回值就可以控制是否挂起协程还是继续执行，返回 false 就会挂起协程，并执行 awaiter.await_suspend()，通过 awaiter.await_suspend() 的返回值来决定是返回 caller 还是继续执行。<br>
+_C++20 协程中最重要的两个对象就是 promise 对象(恢复协程和获取某个任务的执行结果)和 awaiter(挂起协程，等待task执行完成)，其它的都是“工具人”，要实现想要的的协程，关键是要设计如何让这两个对象协作好。_更多细节可以看：
+https://link.zhihu.com/?target=https%3A//lewissbaker.github.io/2017/11/17/understanding-operator-co-await%25EF%25BC%2589%25E3%2580%2582
 
-我们可以通过 promise 的 initial_suspend 和 final_suspend 返回类型来控制协程是否挂起，在 unhandled_exception 里处理异常，在 return_value 里保存协程返回值。
 
-可以根据需要定制 initial_suspend 和 final_suspend 的返回对象来决定是否需要挂起协程。如果挂起协程，代码的控制权就会返回到caller，否则继续执行协程函数体(function body)。
-
-## **基本使用方式**
+## **完整举例**
 ```javascript
 clang-format [options] [<file> ...]
 clang-format --help //建议至少浏览一遍帮助信息。
