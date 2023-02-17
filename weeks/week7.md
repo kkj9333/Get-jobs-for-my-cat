@@ -102,12 +102,98 @@ task foo () {
 可以根据需要定制 initial_suspend 和 final_suspend 的返回对象来决定是否需要挂起协程。如果挂起协程，代码的控制权就会返回到caller，否则继续执行协程函数体（function body）。<br>
 _另外值得注意的是，如果禁用异常，那么生成的代码里就不会有 try-catch。此时协程的运行效率几乎等同非协程版的普通函数。这在嵌入式场景很重要，也是协程的设计目的之一。_<br>
 通过定制 awaiter.await_ready() 的返回值就可以控制是否挂起协程还是继续执行，返回 false 就会挂起协程，并执行 awaiter.await_suspend()，通过 awaiter.await_suspend() 的返回值来决定是返回 caller 还是继续执行。<br>
-_C++20 协程中最重要的两个对象就是 promise 对象(恢复协程和获取某个任务的执行结果)和 awaiter(挂起协程，等待task执行完成)，其它的都是“工具人”，要实现想要的的协程，关键是要设计如何让这两个对象协作好。_更多细节可以看：
+_C++20协程中最重要的两个对象就是 promise 对象(恢复协程和获取某个任务的执行结果)和 awaiter(挂起协程，等待task执行完成)，其它的都是“工具人”，要实现想要的的协程，关键是要设计如何让这两个对象协作好_。更多细节可以看：
 https://link.zhihu.com/?target=https%3A//lewissbaker.github.io/2017/11/17/understanding-operator-co-await%25EF%25BC%2589%25E3%2580%2582
 
 
 ## **完整举例**
-```javascript
-clang-format [options] [<file> ...]
-clang-format --help //建议至少浏览一遍帮助信息。
+这是一个从网上找的例子，用用协程在一个线程里打印线程id，这个输出可以清晰的看到协程是如何创建的、co_await 等待线程结束、线程结束后协程返回值以及协程销毁的整个过程。
+```C++
+#include <coroutine>
+#include <iostream>
+#include <thread>
+ 
+namespace Coroutine {
+  struct task {
+    struct promise_type {
+      promise_type() {
+        std::cout << "1.create promie object\n";
+      }
+      task get_return_object() {
+        std::cout << "2.create coroutine return object, and the coroutine is created now\n";
+        return {std::coroutine_handle<task::promise_type>::from_promise(*this)};
+      }
+      std::suspend_never initial_suspend() {
+        std::cout << "3.do you want to susupend the current coroutine?\n";
+        std::cout << "4.don't suspend because return std::suspend_never, so continue to execute coroutine body\n";
+        return {};
+      }
+      std::suspend_never final_suspend() noexcept {
+        std::cout << "13.coroutine body finished, do you want to susupend the current coroutine?\n";
+        std::cout << "14.don't suspend because return std::suspend_never, and the continue will be automatically destroyed, bye\n";
+        return {};
+      }
+      void return_void() {
+        std::cout << "12.coroutine don't return value, so return_void is called\n";
+      }
+      void unhandled_exception() {}
+    };
+ 
+    std::coroutine_handle<task::promise_type> handle_;
+  };
+ 
+  struct awaiter {
+    bool await_ready() {
+      std::cout << "6.do you want to suspend current coroutine?\n";
+      std::cout << "7.yes, suspend becase awaiter.await_ready() return false\n";
+      return false;
+    }
+    void await_suspend(
+      std::coroutine_handle<task::promise_type> handle) {
+      std::cout << "8.execute awaiter.await_suspend()\n";
+      std::thread([handle]() mutable { handle(); std::cout << "?.tread has been executed,the thread id=" << std::this_thread::get_id() << "\n"; }).detach();
+      std::cout << "9.a new thread lauched, and will return back to caller\n";
+    }
+    void await_resume() {
+      std::cout << "?.await_resume is executed\n";
+    }
+  };
+ 
+  task test() {
+    std::cout << "5.begin to execute coroutine body, the thread id=" << std::this_thread::get_id() << "\n";//#1
+    co_await awaiter{};
+    std::cout << "11.coroutine resumed, continue execcute coroutine body now, the thread id=" << std::this_thread::get_id() << "\n";//#3
+  }
+}// namespace Coroutine
+ 
+int main() {
+  Coroutine::test();
+  std::cout << "10.come back to caller becuase of co_await awaiter\n";
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+  std::cout << "?.sleep over" << std::endl;
+  return 0;
+}
 ```
+输出结果如下，对照之前的协程驱动流程图会更好理解些：
+![image](https://user-images.githubusercontent.com/51207072/219549145-e3606b04-bf35-4a3a-8f30-f0fee128b49b.png)
+<br>
+这里其实调用挺奇怪的，这是因为使用了协程关键字的协程函数以及协程关键字会生成一些额外的代码来支持协程操作，这里task并非在返回时才会生成，而是通过get_return_object初始化器列表直接生成了，这也意味着如果你重写了task的默认构造函数，那这个初始化器列表的构造函数你也必须重写。
+简单来梳理一下流程：<br>
+首先是创建协程，先创建一个协程帧（coroutine frame），这里我们看不到；在协程帧里构建 promise对象，**1.创造promise_type即task::promise_type结构**；把协程的参数拷贝到协程帧里；
+调用 promise.get_return_object()**2.创建协程返回对象即task并把std::coroutine_handle<task::promise_type>协程的句柄拷贝到task，到此协程就创建好了**。<br>
+然后会调用promise.inital_suspend()来决定是否挂起协程，**3.是否挂起协程?4.不挂起因为返回 std::suspend_never,所以协程函数继续执行**。<br>
+如果你是debug模式下，你会发现F11也只会断在这里，也就是说1-4的执行不中断。
+![image](https://user-images.githubusercontent.com/51207072/219542754-bea9ac39-45db-4f73-8288-b73d2e830596.png)<br>
+此时转到协程函数主体执行，并打印相应线程id，也就是main函数线程id，**5.执行协程函数主体，目前线程id是main函数的**。
+![image](https://user-images.githubusercontent.com/51207072/219542839-c3f9c803-768c-4022-b62b-a29bb3d63ba0.png)<br>
+继续执行，遇到协程关键字co_await，这时候会执行awaiter的await_ready()，**6.要暂停协程吗？7.是的因为await_ready()返回false**。<br>
+然后这里我们会因为返回了false而执行awaiter的await_suspend(handle)，**8.执行awaiter.await_suspend()**。**9.新建线程，传入handle（handle可以主动地resume协程）并detach**，在suspend执行完后，（因为return void）会返回协程函数调用者（也即是main函数）继续执行：**10.因为co_await awaiter语句而继续执行caller的代码**：
+![image](https://user-images.githubusercontent.com/51207072/219545231-e2bc3d58-8f65-40af-af01-849b541c0085.png)<br>
+然后主线程休眠（似乎意思是会主动触发resume，**?.await_resume is executed**），**11.协程被唤醒, 现在继续执行协程函数, 目前线程id是新线程的**，这里有点难以理解，但是协程是利用cpu的工作间隙去执行的，可能是两个线程都分配在一个核里，所以是并发的，一个线程休眠时，另外一个线程被唤起，当新线程开始运行的时候恢复挂起的协程，handle()会主动resume协程，这时候代码执行会回到协程函数继续执行，但是此时获取的线程id是就是另一个线程的，这也就是说为什么协程是线程无关的。（_caller 这时候可以不用阻塞等待线程结束，可以做其它事情。更多时候我们在线程完成之后才去恢复协程，这样可以告诉挂起等待任务完成的协程：任务已经完成了，现在可以恢复了，协程恢复后拿到任务的结果继续执行。注意：这里的 awaiter 同时也是一个 awaitable，因为它支持 co_await_。）<br>
+然后就是协程函数执行完毕时的返回值，**12.由于协程函数不返回任何值, 所以promise.return_void()被调用**。<br>
+之后会进入promise.final_suspend() 决定是否要自动销毁协程，返回 std::suspend_never 就自动销毁协程，否则需要用户手动去销毁。
+**13.协程函数执行完了，你要挂起这个协程吗**？
+**14.因为返回std::suspend_never而不挂起，之后协程也会自动销毁**。<br>
+到这里协程函数就执行完了，但是新线程还没有，于是继续执行**?.tread has been executed,the thread id=xxx**。线程执行完后销毁，直到主线程休眠完毕，然后执行
+**?.sleep over**。这就是整个协程的执行流程。<br>
+
