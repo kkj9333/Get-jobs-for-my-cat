@@ -198,4 +198,4 @@ int main() {
 **?.sleep over**。这就是整个协程的执行流程。<br>
 ## 协程库
 可以看出C++20的协程关键字真的很难理解，而且需要开发者考虑很多细枝末节的东西，如果直接使用可能会很不方便，这边收集了一些比较方便的协程库，可以参考一下：
-- C++20 协程库 async_simple（https://github.com/alibaba/async_simple）就应运而生了！
+- C++20 协程库 async_simple https://github.com/alibaba/async_simple
