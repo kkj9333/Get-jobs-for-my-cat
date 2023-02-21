@@ -131,5 +131,10 @@ NDSS
 - Feng Q, Zhou R, Xu C, et al. Scalable graph-based bug search for firmware images[C]
 - X. Xu, C. Liu, Q. Feng, H. Yin, L. Song, and D. Song, “Neural network based graph embedding for cross-platform binary code similarity detection,” in Proceedings of - - the 24th ACM SIGSAC Conference on Computer and Communications Security, (CCS), 2017, pp. 363–376.
 - Zuo F, Li X, Young P, et al. Neural machine translation inspired binary code similarity comparison beyond function pairs[J]. arXiv preprint arXiv:1808.04706, 2018.
-## **备注**
-以后再补充，以防查重
+## **总结**
+本文的解决方案解决了将任何ISA上的基本块映射到相同的嵌入向量空间的问题，并且在其提出的基本块嵌入模型中，这两个嵌入模块可以用于任何其他架构上的基本模块（因为通过中间语言描述，翻译模型的训练过程对于任何架构都是通用的）。<br>
+理论上，该解决方案模型基于NMT模型可以完美翻译x86基本块的前提，这意味着上下文矩阵包含x86和ARM基本块的完整语义，从而可以使用上下文矩阵生成基本块嵌入。首先，我们训练一个将x86基本块转换为相应ARM基本块的NMT模型。训练的NMT模型的编码器是x86编码器。输出上下文矩阵C（理论上，它可以通过解码恢复为ARM基本块）是d×n。其中，n是可变的，因此我们需要通过聚合将上下文矩阵C={ci}转换为固定维向量E，这就是我们所称的基本块嵌入。然后，我们修复了x86编码器，并训练ARM编码器将ARM基本块映射到同一向量空间中，这些基本块与x86中嵌入的基本块接近，在这里我们需要共享具有相同语义的x86 ARM基本块对。因此，理想方案可分为三个步骤：<br>
+- 1） 基本块对生成阶段；
+- 2） 翻译阶段；
+- 3） ARM编码器训练阶段。
+然而，事实上，翻译会有偏差。为了解决这个问题，我们在理想ARM编码器的训练过程中进一步微调x86编码器，以使两个输出目标接近。这种实用的解决方案带来了另一个问题。只有正样本（具有相同语义的基本块对），这使得x86和ARM的嵌入式网络倾向于将任何输入映射到同一向量。因此，x86的基本块嵌入始终接近ARM的基本块嵌入式，即使这些基本块嵌入的语义完全不同。因此，本文引入了负样本。在正样本和负样本的监督下，可以训练嵌入式网络，使x86嵌入式和arm嵌入式在语义相等时彼此接近<br>
