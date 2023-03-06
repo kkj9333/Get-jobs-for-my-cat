@@ -23,4 +23,5 @@
 | Day4       | [元宇宙安全调研与探讨](./weeks/week2.md)   |
 | Day5       | [探索bedrockserver多线程理论与实现](./weeks/week5.md)   |
 | Day6       | [C++20协程和promise规范](./weeks/week7.md)   |
-| Day8       | [云边端协同中知识蒸馏技术的介绍和应用](./weeks/week9.md)   |
+| Day8       | [知识蒸馏技术的介绍和应用](./weeks/week9.md)   |
+| Day9       | [动手机器学习](./weeks/week10.md)   |
