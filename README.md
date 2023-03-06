@@ -17,11 +17,11 @@
 
 | 日期       | 标题                                                                            |
 | ---------- | ------------------------------------------------------------------------------- |
-| Day1       | [了解Clangformat用法并配置成功生成项目 ](./weeks/week1.md)                            |
-| Day2       | [阅读论文 Investigating Graph Embedding Neural Networks with Unsupervised Features Extraction for Binary Analysis ](./weeks/week1.md)   |
-| Day3       | [基于BossEvent包的minecraft-BedrockServer自定义阶段场景实现](./weeks/week2.md)   |
-| Day4       | [元宇宙安全调研与探讨](./weeks/week2.md)   |
-| Day5       | [探索bedrockserver多线程理论与实现](./weeks/week5.md)   |
-| Day6       | [C++20协程和promise规范](./weeks/week7.md)   |
-| Day8       | [知识蒸馏技术的介绍和应用](./weeks/week9.md)   |
+| Day1       | [了解Clangformat用法并配置成功生成项目 ](./weeks/week01.md)                            |
+| Day2       | [阅读论文 Investigating Graph Embedding Neural Networks with Unsupervised Features Extraction for Binary Analysis ](./weeks/week01.md)   |
+| Day3       | [基于BossEvent包的minecraft-BedrockServer自定义阶段场景实现](./weeks/week02.md)   |
+| Day4       | [元宇宙安全调研与探讨](./weeks/week02.md)   |
+| Day5       | [探索bedrockserver多线程理论与实现](./weeks/week05.md)   |
+| Day6       | [C++20协程和promise规范](./weeks/week07.md)   |
+| Day8       | [知识蒸馏技术的介绍和应用](./weeks/week09.md)   |
 | Day9       | [动手机器学习](./weeks/week10.md)   |
