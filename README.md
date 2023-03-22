@@ -25,4 +25,4 @@
 | Day6       | [C++20协程和promise规范](./weeks/week07.md)   |
 | Day8       | [知识蒸馏技术的介绍和应用](./weeks/week09.md)   |
 | Day9       | [动手机器学习](./weeks/week10.md)   |
-| Day10       | [知识蒸馏论文精选概述](./weeks/week12.md)   |
+| Day10       | [An Efficient and Robust Cloud-based DeepLearning with Knowledge Distillation](./weeks/week12.md)   |
