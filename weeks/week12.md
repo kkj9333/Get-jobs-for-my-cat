@@ -17,9 +17,15 @@
 <br>
 假定一个d维线性特征流形M ⊂ R^d 嵌入在 R^m中，可定义一个构造函数h：
 ![image](https://user-images.githubusercontent.com/51207072/226779658-cfad7a3e-97cf-43b3-bb73-8e01507b3492.png)<br>
-给定N个从DNN学习到的特征fi，其中可能带有来着d维线性特征流形的噪音：
+给定N个从DNN学习到的特征fi，可能是采样来自d维线性特征流，并且带有噪音：
 ![image](https://user-images.githubusercontent.com/51207072/226780118-33cd467c-c730-4bfd-ad60-f8fce1dff20b.png)<br>
-vi是第i个特征fi的特征流形，ϵi是误差。目标是根据fi估计未知的低维特征向量vi，即想用更低维的vi来表示学习特征，
+vi是第i个特征fi的特征流形，ϵi是误差。目标是根据fi估计未知的低维特征向量vi，即想用更低维的vi来表示学习特征。<br>
+![image](https://user-images.githubusercontent.com/51207072/226789547-949ebe4f-d07a-4fa8-9971-8ca700e5f89c.png)
+F = [f1，f2···，fN ]包括所有N特性，我们的目标是找到c，A和V最小化近似误差E V = [v1，v2，···，vN]，E=[ϵ1，ϵ2，···ϵN],e是所有的N维列向量。
+关于这里论证特征流形的举例二维的例子这里不再介绍,这里假设了c = f ¯ = F e/N（F的平均值），并采用SVD分解的方法来求AV的表达式，结论如下：<br>
+![image](https://user-images.githubusercontent.com/51207072/226790110-0e90594c-ea88-4732-bde3-02a09b33878c.png)<br>
+![image](https://user-images.githubusercontent.com/51207072/226790132-466bd384-eabc-497a-bed6-fff9c6bacb12.png)<br>
 
-
+### 深层特征的特征流形
+深度学习中特征流形更加复杂，非线性化。非线性流形学习的关键困难是无组织的降维数据。论文认为对非线性深度特征的流形学习的目标是在不明确知道h（·）的情况下，从相应的特征fi或h（vi）重构vi。
 
