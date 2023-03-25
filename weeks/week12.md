@@ -64,7 +64,8 @@ CL学习任务相关性需要界定任务边界，大多数多任务CL方法依�
 
 ### Huber loss
 ![image](https://user-images.githubusercontent.com/51207072/227679124-0a3012c2-92ea-46fe-ab68-325f368c54d7.png)
-
+### 知识蒸馏
+蒸馏的概念最初用于将“知识”从一个复杂的网络集合转移到一个相对更简单的网络中，以降低模型的复杂性和便于部署。知识蒸馏可以很好地鼓励一个网络的输出接近另一个网络的输出。
 
 ### RL范式（RL Paradigm）
 RL问题被认为是一个马尔可夫决策过程（MDP），被定义为一个元组：![image](https://user-images.githubusercontent.com/51207072/227400539-d1f33b61-b514-4540-8042-d4c91ef4b6b9.png)
@@ -116,11 +117,10 @@ RL问题被认为是一个马尔可夫决策过程（MDP），被定义为一个
 ![image](https://user-images.githubusercontent.com/51207072/227679852-6404b50c-f803-4faf-bf53-e2a9437487b8.png)
 
 <br>
-q函数的权值集合记为θ = {θS，θT，θF }，其中θS是一组共享参数，而θT和θF都是特定于上下文的参数： θT是对应于当前输入状态s的上下文，而θF是对应于其他输入状态s的上下文。本文以以IQ和基本的RL算法DQN的结合作为一个示例。
+q函数的权值集合记为θ = {θS,θT,θF}，其中θS是一组共享参数，而θT和θF都是特定于上下文的参数： θT是对应于当前输入状态s的上下文，而θF是对应于其他输入状态s的上下文。本文以以IQ和基本的RL算法DQN的结合作为一个示例。
 ### 1.上下文划分
 在MDPs中，状态（或“观察”）代表了关于环境的最全面的信息。为了理解不同分布的状态，为状态空间中相互接近的状态集合定义了一个变量ω，称为上下文<br>
 ![image](https://github.com/kkj9333/Get-jobs-for-my-cat/blob/f2a04ec96fa1301e1d591bf56035db4cd72fb2b0/weeks/asserts/image.png)
-
 <br>
 其中Ω是一个有限的上下文集合，k是上下文的数量。对于任意MDP将其状态空间划分为k个上下文，每个上下文中的所有状态都遵循近似相同的分布，以解耦状态们与分布漂移的相关性，我们将一个上下文ωi与每个集合Si关联起来，因此对于s∈Si，ω(s) = ωi，其中ω(s)可以被认为是状态s的函数。<br>
 由于RL学习中探索学习特性，代理（the agent）在寻找最优策略时通常不会体验到环境的所有可能状态。基于这个事实，在IQ中，我们只对训练中所经历的状态进行上下文划分。本文采用了顺序的K-means聚类来实现自适应的上下文检测。<br>
@@ -134,6 +134,23 @@ q函数的权值集合记为θ = {θS，θT，θF }，其中θS是一组共享�
 通过在CartPole-v0上训练400k环境步骤时，聚类所有有经验过的状态来测量上下文之间的干扰（k = 3）。当代理在特定上下文上进行训练时，我们记录了所有上下文的Huber损失的相对变化。显然，对特定环境的培训通常会减少对其本身的损失，并增加对所有其他环境的损失。
 - 计算复杂性（Computational Complexity）。假设有k个上下文的d维环境，我们提出的上下文划分模块处理T个环境步骤的时间和空间复杂度分别为O（Tkd）和O（kd）。
 ### 2.知识蒸馏
+共享的低级表示（low-level representation）可能导致新环境中的学习干扰之前的学习结果，从而导致灾难性的干扰。知识蒸馏可以很好地鼓励一个网络的输出接近另一个网络的输出，在IQ中，我们使用它作为价值函数估计中的一个正则化项，以保留先前学习到的信息。
+当在特定的上下文上训练模型时，我们需要考虑损失函数的两个方面：
+- 当前训练上下文的一般损失，由Lori表示。鼓励模型适应当前的上下文，以确保可塑性。
+- 其他上下文的蒸馏损失，由LD表示。后者鼓励模型保持对其他上下文的记忆，防止干扰。
+为了将IQ纳入DQN框架，我们改写了
+![image](https://user-images.githubusercontent.com/51207072/227408249-b968e186-42ac-46ca-b43d-fb81337ce9c7.png)<br>
+中DQN的原始损失函数，以上下文变量ω为：<br>
+![image](https://user-images.githubusercontent.com/51207072/227683406-d474449c-1e0c-4916-9486-4bfa063101a3.png)<br>
+![image](https://user-images.githubusercontent.com/51207072/227683531-c23623ee-f4b8-4120-be9a-e20ebe1bb645.png)<br>
+是Q(s,a,w(s);θS,θT)的估计目标值，μ为样本的分布，即![image](https://user-images.githubusercontent.com/51207072/227685247-7ea6836d-a1be-4dd2-98ab-294c57308fb3.png)
+，L为Huber损失<br>
+对于环境所包含的每个其他上下文，我们期望每对(s,a)的输出值接近于原始网络的记录输出。
+1. 我们将当前更新步骤前学习到的Q函数视为教师网络，表示为![image](https://user-images.githubusercontent.com/51207072/227687515-efdbf5a4-e3e9-4e30-a048-cd8de7067585.png)=![image](https://user-images.githubusercontent.com/51207072/227687629-964f217b-15d7-4115-8030-da6edcee3fc8.png)
+2. 当前网络训练为学生网络（请注意主要是针对其他上下文被此次更新影响到的输出，要模拟到之前的各自上下文的输出），表示为![image](https://user-images.githubusercontent.com/51207072/227687756-c409905a-1a4d-43b4-8366-a11356121d81.png)，其中当前ωi∈Ω且不包含当前的上下文ω(s)。因此，蒸馏损失被定义为：
+![image](https://user-images.githubusercontent.com/51207072/227688110-eb907623-55d1-427f-8b74-ead80092dc65.png)<br>其中![image](https://user-images.githubusercontent.com/51207072/227688404-669804b0-eb17-480c-8291-79530a3a6782.png)是与上下文ωi对应的输出头的蒸馏损失函数。
+
+
 
 
 
