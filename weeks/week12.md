@@ -146,7 +146,7 @@ q函数的权值集合记为θ = {θS,θT,θF}，其中θS是一组共享参数�
 - 其他上下文的蒸馏损失，由LD表示。后者鼓励模型保持对其他上下文的记忆，防止干扰。
 为了将IQ纳入DQN框架，我们改写了
 ![image](https://user-images.githubusercontent.com/51207072/227408249-b968e186-42ac-46ca-b43d-fb81337ce9c7.png)<br>
-中DQN的原始损失函数，以上下文变量ω为：<br>
+中DQN的原始损失函数，以上下文变量ω为：
 ##### 原始损失函数
 ![image](https://user-images.githubusercontent.com/51207072/227683406-d474449c-1e0c-4916-9486-4bfa063101a3.png)<br>
 ![image](https://user-images.githubusercontent.com/51207072/227683531-c23623ee-f4b8-4120-be9a-e20ebe1bb645.png)<br>
@@ -155,9 +155,11 @@ q函数的权值集合记为θ = {θS,θT,θF}，其中θS是一组共享参数�
 对于环境所包含的每个其他上下文，我们期望每对(s,a)的输出值接近于原始网络的记录输出。
 1. 我们将当前更新步骤前学习到的Q函数视为教师网络，表示为![image](https://user-images.githubusercontent.com/51207072/227687515-efdbf5a4-e3e9-4e30-a048-cd8de7067585.png)=![image](https://user-images.githubusercontent.com/51207072/227687629-964f217b-15d7-4115-8030-da6edcee3fc8.png)
 2. 当前网络训练为学生网络（请注意主要是针对其他上下文被此次更新影响到的输出，要模拟到之前的各自上下文的输出），表示为![image](https://user-images.githubusercontent.com/51207072/227687756-c409905a-1a4d-43b4-8366-a11356121d81.png)，其中当前ωi∈Ω且不包含当前的上下文ω(s)。因此，蒸馏损失被定义为：
+##### 蒸馏损失函数
 ![image](https://user-images.githubusercontent.com/51207072/227688110-eb907623-55d1-427f-8b74-ead80092dc65.png)<br>其中![image](https://user-images.githubusercontent.com/51207072/227688404-669804b0-eb17-480c-8291-79530a3a6782.png)是与上下文ωi对应的输出头的蒸馏损失函数。
 ### 3.联合优化程序（Joint Optimization Procedure）
-为了优化出一个可以指导代理在每个上下文上做出适当的决策，而不受到灾难性干扰的不利影响的Q函数，我们结合[原始损失](https://github.com/kkj9333/Get-jobs-for-my-cat/blob/main/weeks/week12.md#原始损失函数)和[蒸馏损失](https://github.com/kkj9333/Get-jobs-for-my-cat/blob/main/weeks/week12.md#152)来形成一个联合优化框架。即，我们通过以下优化目标（_optimization objective_）来解决灾难性干扰问题：<br>
+为了优化出一个可以指导代理在每个上下文上做出适当的决策，而不受到灾难性干扰的不利影响的Q函数，我们结合[原始损失](https://github.com/kkj9333/Get-jobs-for-my-cat/blob/main/weeks/week12.md#原始损失函数)和[蒸馏损失](https://github.com/kkj9333/Get-jobs-for-my-cat/blob/main/weeks/week12.md#蒸馏损失函数)来形成一个联合优化框架。即，我们通过以下优化目标（_optimization objective_）来解决灾难性干扰问题：<br>
+##### 联合损失函数
 ![image](https://user-images.githubusercontent.com/51207072/227689463-64afb9fe-cfcc-4918-928f-a0e4a70eb8bc.png)<br>
 λ∈[0,1]是控制神经网络稳定性和可塑性之间权衡的系数（这个是超参数？？）。<br>
 在算法1中描述了完整的过程。<br>
@@ -207,10 +209,19 @@ IQ-RE:上下文划分是在一个随机编码器的低维表示空间中执行�
 综上所述，所提出的包含基于经验过状态聚类的上下文划分和在多头神经网络中的知识精馏的技术可以有效地消除单任务RL中数据漂移引起的灾难性干扰，同时减少了非策略RL对重放缓冲区容量的需求。此外，我们的方法（IQ-RE）利用一个固定的随机初始化编码器来表征低维表示空间中状态之间的相似性，可以用于高维环境的上下文分区。
 
 ### 分析
+#### 消融研究（Ablation Study）
+分别消除：
+1. 基于在线聚类的自适应上下文划分，意味着在学习前使用原始状态空间的随机划分。
+2. 蒸馏损失，即从[联合损失函数](https://github.com/kkj9333/Get-jobs-for-my-cat/blob/main/weeks/week12.md#联合损失函数)（即λ = 0)中去除[蒸馏损失函数](https://github.com/kkj9333/Get-jobs-for-my-cat/blob/main/weeks/week12.md#蒸馏损失函数)LD（θS、θF）。
+3. 多头，意味着删除上下文分割模块，并使用单头输出优化神经网络（即k = 1）。这里，蒸馏项表示为输出头每次更新之前网络的蒸馏（貌似无意义了？）。
+与基础DQN的实验对比结果如下：<br>
+![image](https://user-images.githubusercontent.com/51207072/227708688-f9d3a364-08f5-4fcf-8586-c07dcc820914.png)
 
+## 论文总结
 
-
-
+在本文中，我们提出了一个有效的方案IQ来解决单任务RL中灾难性干扰的固有挑战。其核心思想是使用在线聚类技术将训练过程中经历的所有状态划分到一组上下文中，同时使用多头神经网络估计上下文特定的价值函数以及知识蒸馏损失，以减轻跨上下文的干扰。此外，我们还引入了一个随机的编码器（在IQ-RE中），以增强对高维复杂任务的上下文划分。
+我们的方法可以有效地解耦不同分布状态之间的相关性，并可以很容易地合并到各种基于值的RL模型中。在几个基准测试上的实验表明，我们的方法可以显著地优于最先进的RL方法，并显著地降低了现有RL方法的内存需求。<br>
+在未来，我们的目标是将我们的方法纳入基于策略的RL模型中，通过对策略应用权重或函数正则化来减少训练过程中的干扰。此外，我们将研究一个更具挑战性的设置，称为非平稳环境中的连续RL。这个设置是对现实世界场景的一个更现实的表示，包括动态上的突变或平滑过渡，甚至动态本身被打乱。
 
 
 
