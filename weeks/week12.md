@@ -62,6 +62,8 @@ CL学习任务相关性需要界定任务边界，大多数多任务CL方法依�
 
 ## 一些定义&前置知识
 
+### Model-Free
+Model-free是指对于马尔科夫决策过程(MDP)中的环境机制一无所知，具体而言是指给定当前状态，agent采取动作后并不知道下一步状态在哪，以及不知道奖励会是多少。在这种情况我们并不能做规划，因为你不知道下一步会遇到什么。这时候，我们需要改变策略，采用先做实验再估计的方法。具体而言我们有两种方法，Monte-Carlo以及Temporal-Difference Learning方法。
 ### Huber loss
 ![image](https://user-images.githubusercontent.com/51207072/227679124-0a3012c2-92ea-46fe-ab68-325f368c54d7.png)
 ### 知识蒸馏
