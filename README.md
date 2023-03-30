@@ -26,5 +26,5 @@
 | Day8       | [知识蒸馏技术的介绍和应用](./weeks/week09.md)   |
 | Day9       | [动手机器学习](./weeks/week10.md)   |
 | Day10       | [An Efficient and Robust Cloud-based DeepLearning with Knowledge Distillation](./weeks/week12.md)   |
-| Day11       | [Catastrophic Interference in Reinforcement Learning: A Solution Based on Context Division and Knowledge Distillation](./weeks/week12.md#强化学习干扰问题)   |
+| Day11       | [Catastrophic Interference in Reinforcement Learning: A Solution Based on Context Division and Knowledge Distillation](./weeks/week12.md#day-11-catastrophic-interference-in-reinforcement-learning-a-solution-based-on-context-division-and-knowledge-distillation)   |
 
