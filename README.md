@@ -28,3 +28,4 @@
 | Day10       | [An Efficient and Robust Cloud-based DeepLearning with Knowledge Distillation](./weeks/week12.md)   |
 | Day11       | [Catastrophic Interference in Reinforcement Learning: A Solution Based on Context Division and Knowledge Distillation](./weeks/week12.md#day-11-catastrophic-interference-in-reinforcement-learning-a-solution-based-on-context-division-and-knowledge-distillation)   |
 | Day12       | [强化学习综述](./weeks/week13.md)   |
+| Day13       | [MimicNet: Fast Performance Estimates for Data Center Networks with Machine Learning](./weeks/week14.md)   |
